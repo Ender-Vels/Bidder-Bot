@@ -36,7 +36,8 @@ def home():
         return redirect(url_for('login'))
 
     try:
-        filters_data_skill = fetch_data("https://www.freelancer.com/api/projects/0.1/jobs/")
+        filters_data_skill_response = fetch_data("https://www.freelancer.com/api/projects/0.1/jobs/")
+        filters_data_skill = filters_data_skill_response['result']
         filters_data_countries_response = fetch_data("https://www.freelancer.com/api/common/0.1/countries")
         filters_data_countries = filters_data_countries_response['result']['countries']
         filters_data_currencies_response = fetch_data("https://www.freelancer.com/api/projects/0.1/currencies/")
