@@ -5,11 +5,16 @@ import threading
 import time
 from requests_oauthlib import OAuth2Session
 import secrets
+import logging
 
 app = Flask(__name__)
 
 # Генерация секретного ключа, если он не установлен
 app.secret_key = os.environ.get('SECRET_KEY', secrets.token_hex(16))
+
+# Настройка логирования
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # OAuth2 Configuration
 client_id = '08555429-03a8-4924-8336-6a302feeaedd'
@@ -43,10 +48,10 @@ def home():
         filters_data_currencies_response = fetch_data("https://www.freelancer.com/api/projects/0.1/currencies/")
         filters_data_currencies = filters_data_currencies_response['result']['currencies']
     except Exception as e:
+        logger.error(f"Failed to retrieve data: {e}")
         return f"Failed to retrieve data: {e}"
 
     return render_template('index.html', skills=filters_data_skill, countries=filters_data_countries, currencies=filters_data_currencies)
-
 
 @app.route('/login')
 def login():
@@ -61,6 +66,7 @@ def callback():
     try:
         token = freelancer.fetch_token(token_url, client_secret=client_secret, authorization_response=request.url)
     except Exception as e:
+        logger.error(f"Failed to fetch token: {e}")
         return f"Failed to fetch token: {e}"
     session['oauth_token'] = token
     return redirect(url_for('home'))
@@ -84,16 +90,16 @@ def submit():
     gpt_token = request.form.get('gpt-token')
     example_message = request.form.get('example-message')
 
-    print(f"Freelancer API URL: {freelancer_api}")
-    print(f"Selected Skills: {skills}")
-    print(f"Skill IDs: {skill_ids}")
-    print(f"Selected Countries: {countries}")
-    print(f"Selected Currencies: {currencies}")
-    print(f"Minimum Rate per Hour: {min_rate}")
-    print(f"Maximum Rate per Hour: {max_rate}")
-    print(f"Fixed Rate: {fixed_rate}")
-    print(f"GPT Token: {gpt_token}")
-    print(f"Example Message: {example_message}")
+    logger.info(f"Freelancer API URL: {freelancer_api}")
+    logger.info(f"Selected Skills: {skills}")
+    logger.info(f"Skill IDs: {skill_ids}")
+    logger.info(f"Selected Countries: {countries}")
+    logger.info(f"Selected Currencies: {currencies}")
+    logger.info(f"Minimum Rate per Hour: {min_rate}")
+    logger.info(f"Maximum Rate per Hour: {max_rate}")
+    logger.info(f"Fixed Rate: {fixed_rate}")
+    logger.info(f"GPT Token: {gpt_token}")
+    logger.info(f"Example Message: {example_message}")
 
     def fetch_projects():
         while is_running:
@@ -116,11 +122,11 @@ def submit():
                 data = response.json()
                 projects = data.get('result', {}).get('projects', [])
                 filtered_projects = [project for project in projects if any(skill in project.get('seo_url', '') for skill in skills)]
-                print(f'Found projects: {len(filtered_projects)}')
+                logger.info(f'Found projects: {len(filtered_projects)}')
                 for project in filtered_projects:
                     create_bid(project)
             except Exception as e:
-                print(f'Error fetching projects: {e}')
+                logger.error(f'Error fetching projects: {e}')
             time.sleep(60)
 
     def generate_alternatives():
@@ -129,12 +135,12 @@ def submit():
             response.raise_for_status()
             response_data = response.json()
             alternatives = [choice['message']['content'] for choice in response_data['choices']]
-            print('Generated alternatives:')
+            logger.info('Generated alternatives:')
             for alternative in alternatives:
-                print(alternative)
+                logger.info(alternative)
             return alternatives
         except Exception as e:
-            print(f'Error generating alternatives: {e}')
+            logger.error(f'Error generating alternatives: {e}')
             return []
 
     def create_bid(project):
@@ -166,9 +172,9 @@ def submit():
             response = requests.post('https://www.freelancer.com/api/projects/0.1/bids/', headers=headers, json=data)
             response.raise_for_status()
             result = response.json()
-            print(f'Bid created successfully for project {project_id}: {result}')
+            logger.info(f'Bid created successfully for project {project_id}: {result}')
         except Exception as e:
-            print(f'Error creating bid for project {project_id}: {e}')
+            logger.error(f'Error creating bid for project {project_id}: {e}')
 
     threading.Thread(target=fetch_projects, daemon=True).start()
 
