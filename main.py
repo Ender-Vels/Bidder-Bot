@@ -16,7 +16,7 @@ client_id = '08555429-03a8-4924-8336-6a302feeaedd'
 client_secret = 'eb5a159fe8af4923799e32c8b3acab4a9de432f7cc300b19c1352943dc84ca21d49e6fbbde6e33186c5dd672ccc24d20607a606921734f7b87cd5ab19442a57d'
 authorization_base_url = 'https://accounts.freelancer.com/oauth/authorize'
 token_url = 'https://accounts.freelancer.com/oauth/token'
-redirect_uri = 'https://13.60.217.236/callback'
+redirect_uri = 'https://bidder-bot.vercel.app/callback'
 
 scope = [
     'basic',
