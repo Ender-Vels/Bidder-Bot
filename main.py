@@ -37,12 +37,15 @@ def home():
 
     try:
         filters_data_skill = fetch_data("https://www.freelancer.com/api/projects/0.1/jobs/")
-        filters_data_countries = fetch_data("https://www.freelancer.com/api/common/0.1/countries")['countries']
-        filters_data_currencies = fetch_data("https://www.freelancer.com/api/projects/0.1/currencies/")['currencies']
+        filters_data_countries_response = fetch_data("https://www.freelancer.com/api/common/0.1/countries")
+        filters_data_countries = filters_data_countries_response['result']['countries']
+        filters_data_currencies_response = fetch_data("https://www.freelancer.com/api/projects/0.1/currencies/")
+        filters_data_currencies = filters_data_currencies_response['result']['currencies']
     except Exception as e:
         return f"Failed to retrieve data: {e}"
 
     return render_template('index.html', skills=filters_data_skill, countries=filters_data_countries, currencies=filters_data_currencies)
+
 
 @app.route('/login')
 def login():
